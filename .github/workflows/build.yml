@@ -1,0 +1,105 @@
+name: Build and Verify LORE
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build Compiler & Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Ninja and build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Configure and build LORE compiler
+        run: |
+          cmake -B build-host -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-host --target lore lore_tests
+
+      - name: Run compiler unit tests
+        run: |
+          ctest --test-dir build-host --output-on-failure
+
+      - name: Discover Android SDK and NDK
+        id: android-env
+        run: |
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          echo "ANDROID_NDK_LATEST_HOME: $ANDROID_NDK_LATEST_HOME"
+          NDK_DIR="$ANDROID_NDK_LATEST_HOME"
+          if [ -z "$NDK_DIR" ] || [ ! -d "$NDK_DIR" ]; then
+            NDK_DIR=$(ls -d $ANDROID_HOME/ndk/* 2>/dev/null | sort -V | tail -n 1)
+          fi
+          echo "Using NDK: $NDK_DIR"
+          echo "ndk_dir=$NDK_DIR" >> $GITHUB_OUTPUT
+
+          BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* 2>/dev/null | sort -V | tail -n 1)
+          echo "Using Build-Tools: $BUILD_TOOLS_DIR"
+          echo "build_tools=$BUILD_TOOLS_DIR" >> $GITHUB_OUTPUT
+
+          PLATFORM_JAR=$(ls -d $ANDROID_HOME/platforms/android-*/android.jar 2>/dev/null | sort -V | tail -n 1)
+          echo "Using android.jar: $PLATFORM_JAR"
+          echo "android_jar=$PLATFORM_JAR" >> $GITHUB_OUTPUT
+
+      - name: Build arm64-v8a NativeActivity shared library
+        run: |
+          cmake -B build-android-arm64 -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="${{ steps.android-env.outputs.ndk_dir }}/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-26 \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-android-arm64 --target app
+
+      - name: Package Counter Debug APK
+        run: |
+          mkdir -p dist
+          python3 android/package_apk.py \
+            --package-name "com.axilo.counter" \
+            --package-label "Counter" \
+            --lib-name "app" \
+            --so build-android-arm64/libapp.so \
+            --abi arm64-v8a \
+            --assets examples/assets \
+            --out dist/counter-debug.apk \
+            --sdk-root "$ANDROID_HOME"
+
+      - name: Upload Counter Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: counter-debug-apk
+          path: dist/counter-debug.apk
+
+  build-host-so:
+    name: Build Host Embeddable .so
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure and build host shared library
+        run: |
+          cmake -B build-host -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-host --target app
+
+      - name: Verify exported C ABI symbols
+        run: |
+          nm -D build-host/libapp.so | grep lore_ || true
+          nm -D build-host/libapp.so | grep -q "lore_init"
+          nm -D build-host/libapp.so | grep -q "lore_input"
+          nm -D build-host/libapp.so | grep -q "lore_stage"
+          nm -D build-host/libapp.so | grep -q "lore_render"
+          echo "All required C ABI functions exported!"
+
+      - name: Upload Host libapp.so
+        uses: actions/upload-artifact@v4
+        with:
+          name: host-libapp-so
+          path: build-host/libapp.so

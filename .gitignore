@@ -1,0 +1,16 @@
+build/
+build-*/
+dist/
+dist-*/
+bin/
+*.apk
+*.aab
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
+.DS_Store
+__pycache__/
+*.pyc
+_apk_build_tmp/

@@ -1,0 +1,18 @@
+package:name : "com.axilo.hello".
+package:id : "hello1".
+package:label : "Hello LORE".
+
+import [ UI ].
+
+permission
+  ShowDisplay : true.
+EndOfPermission.
+
+HCCS
+  "#4287f5" is "blue".
+EndOfHCCS.
+
+root is bg.
+bg size is fullscreen.
+bg colour is CS:blue.
+.endbgatt.
