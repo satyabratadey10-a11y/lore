@@ -309,6 +309,49 @@ std::string get_rendered_text(const std::string& handle) {
     return "";
 }
 
+void set_element_pressed(const std::string& handle, bool pressed) {
+    auto& s = RuntimeState::instance();
+    auto it = s.elements.find(handle);
+    if (it != s.elements.end()) {
+        it->second.is_pressed = pressed;
+    }
+}
+
+bool is_element_pressed(const std::string& handle) {
+    auto& s = RuntimeState::instance();
+    auto it = s.elements.find(handle);
+    return (it != s.elements.end()) ? it->second.is_pressed : false;
+}
+
+std::string get_active_texture_path(const std::string& handle) {
+    auto& s = RuntimeState::instance();
+    auto it = s.elements.find(handle);
+    if (it == s.elements.end()) return "";
+    const auto& el = it->second;
+    if (el.is_disabled && !el.image_disabled.empty()) {
+        return el.image_disabled;
+    }
+    if (el.is_pressed && !el.image_pressed.empty()) {
+        return el.image_pressed;
+    }
+    return el.image;
+}
+
+ImageFit get_element_image_fit(const std::string& handle) {
+    auto& s = RuntimeState::instance();
+    auto it = s.elements.find(handle);
+    return (it != s.elements.end()) ? it->second.image_fit : ImageFit::NONE;
+}
+
+ColorRGBA get_element_image_tint(const std::string& handle) {
+    auto& s = RuntimeState::instance();
+    auto it = s.elements.find(handle);
+    if (it != s.elements.end() && !it->second.image_tint.empty()) {
+        return resolve_color(it->second.image_tint);
+    }
+    return {1.0f, 1.0f, 1.0f, 1.0f};
+}
+
 void show_display_at(Stage stage) {
     auto& s = RuntimeState::instance();
     s.current_stage = stage;

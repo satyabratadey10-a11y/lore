@@ -93,3 +93,12 @@ target_include_directories(test_runtime_m5 PRIVATE
 )
 target_link_libraries(test_runtime_m5 PRIVATE app)
 add_test(NAME test_runtime_m5 COMMAND test_runtime_m5)
+
+add_executable(test_images_m6 tests/test_images_m6.cpp)
+target_include_directories(test_images_m6 PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/compiler
+    ${CMAKE_CURRENT_SOURCE_DIR}/runtime
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+)
+target_link_libraries(test_images_m6 PRIVATE lore_compiler_lib app)
+add_test(NAME test_images_m6 COMMAND test_images_m6)

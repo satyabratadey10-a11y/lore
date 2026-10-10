@@ -124,6 +124,7 @@ void Renderer::on_touch_down(float x, float y) {
     std::string handle = hit_test(x, y);
     if (!handle.empty()) {
         pressed_handle_ = handle;
+        set_element_pressed(handle, true);
         trigger_event(handle, EventType::PRESSED);
         needs_redraw_ = true;
     }
@@ -132,6 +133,7 @@ void Renderer::on_touch_down(float x, float y) {
 void Renderer::on_touch_up(float x, float y) {
     if (!pressed_handle_.empty()) {
         std::string hit = hit_test(x, y);
+        set_element_pressed(pressed_handle_, false);
         trigger_event(pressed_handle_, EventType::RELEASED);
         if (hit == pressed_handle_) {
             trigger_event(pressed_handle_, EventType::TAPPED);

@@ -82,6 +82,6 @@ LORE is a controlled English-like programming language tailored for native UI an
 - [x] **M3 Codegen**: LORE -> C++ against runtime API, compiles for host & NDK.
 - [x] **M4 Blue Screen**: hello.lore -> full-screen blue canvas on Android.
 - [x] **M5 Text + Button + State**: {count} interpolation, tap handling, redraw loop.
-- [ ] **M6 Images**: Texture loading, pressed/disabled states, fit modes, tints.
+- [x] **M6 Images**: Texture loading, pressed/disabled states, fit modes, tints.
 - [ ] **M7 Permissions + Stages**: ShowDisplay, OutputDisplay, InputHarness, stage statements.
 - [ ] **M8 Demo App**: Finished counter demo + stage demo, release artifacts, instructions.

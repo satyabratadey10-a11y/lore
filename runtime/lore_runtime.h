@@ -145,6 +145,11 @@ void trigger_event(const std::string& handle, EventType event);
 std::string get_root_handle();
 std::vector<std::string> get_child_handles(const std::string& parent_handle);
 std::string get_rendered_text(const std::string& handle);
+std::string get_active_texture_path(const std::string& handle);
+ImageFit get_element_image_fit(const std::string& handle);
+ColorRGBA get_element_image_tint(const std::string& handle);
+void set_element_pressed(const std::string& handle, bool pressed);
+bool is_element_pressed(const std::string& handle);
 
 // Stage & display statements
 void show_display_at(Stage stage);
