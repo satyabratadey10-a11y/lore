@@ -61,13 +61,12 @@ endif()
 # -----------------------------------------------------------------------------
 enable_testing()
 
-file(GLOB TEST_SOURCES "tests/*.cpp")
-if(TEST_SOURCES)
-    add_executable(lore_tests ${TEST_SOURCES})
-    target_include_directories(lore_tests PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/compiler
-        ${CMAKE_CURRENT_SOURCE_DIR}/runtime
-    )
-    target_link_libraries(lore_tests PRIVATE lore_compiler_lib)
-    add_test(NAME lore_tests COMMAND lore_tests)
-endif()
+add_executable(test_parser tests/test_lexer_parser.cpp)
+target_include_directories(test_parser PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/compiler)
+target_link_libraries(test_parser PRIVATE lore_compiler_lib)
+add_test(NAME test_parser COMMAND test_parser)
+
+add_executable(test_checker tests/test_checker.cpp)
+target_include_directories(test_checker PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/compiler)
+target_link_libraries(test_checker PRIVATE lore_compiler_lib)
+add_test(NAME test_checker COMMAND test_checker)

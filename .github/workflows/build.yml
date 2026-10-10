@@ -23,7 +23,7 @@ jobs:
       - name: Configure and build LORE compiler
         run: |
           cmake -B build-host -G Ninja -DCMAKE_BUILD_TYPE=Release
-          cmake --build build-host --target lore lore_tests
+          cmake --build build-host --target lore test_parser test_checker
 
       - name: Run compiler unit tests
         run: |

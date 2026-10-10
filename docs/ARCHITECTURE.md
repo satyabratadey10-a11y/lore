@@ -78,7 +78,7 @@ LORE is a controlled English-like programming language tailored for native UI an
 
 - [x] **M0 Scaffold**: Repo layout, CMake build, NativeActivity APK packager, CI workflow, green test suite.
 - [x] **M1 Lexer + Parser**: Full EBNF grammar, AST dump, tests for all rules & friendly errors.
-- [ ] **M2 Checker**: Semantic checks (handles, CS:name, images, types, warnings).
+- [x] **M2 Checker**: Semantic checks (handles, CS:name, images, types, warnings).
 - [ ] **M3 Codegen**: LORE -> C++ against runtime API, compiles for host & NDK.
 - [ ] **M4 Blue Screen**: hello.lore -> full-screen blue canvas on Android.
 - [ ] **M5 Text + Button + State**: {count} interpolation, tap handling, redraw loop.

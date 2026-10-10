@@ -10,6 +10,7 @@
 #include "lexer.h"
 #include "ast.h"
 #include "parser.h"
+#include "checker.h"
 
 #define LORE_VERSION "0.1.0"
 
@@ -83,11 +84,24 @@ int main(int argc, char** argv) {
             lore::Parser parser(input_file, tokens);
             auto ast = parser.parse_program();
 
+            std::string base_dir = ".";
+            size_t slash = input_file.find_last_of("/\\");
+            if (slash != std::string::npos) {
+                base_dir = input_file.substr(0, slash);
+            }
+
+            lore::Checker checker(base_dir);
+            checker.check_program(ast);
+
+            for (const auto& w : checker.warnings()) {
+                std::cout << "[LORE Warning] " << w << "\n";
+            }
+
             if (dump_ast_flag && ast) {
                 ast->dump(std::cout);
             }
 
-            std::cout << "[LORE] Syntax check passed: " << input_file << "\n";
+            std::cout << "[LORE] Syntax and semantic check passed: " << input_file << "\n";
             return 0;
         } catch (const lore::CompileError& e) {
             std::cerr << "Error at " << e.what() << "\n";
