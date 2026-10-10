@@ -70,3 +70,8 @@ add_executable(test_checker tests/test_checker.cpp)
 target_include_directories(test_checker PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/compiler)
 target_link_libraries(test_checker PRIVATE lore_compiler_lib)
 add_test(NAME test_checker COMMAND test_checker)
+
+add_executable(test_codegen tests/test_codegen.cpp)
+target_include_directories(test_codegen PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/compiler)
+target_link_libraries(test_codegen PRIVATE lore_compiler_lib)
+add_test(NAME test_codegen COMMAND test_codegen)
