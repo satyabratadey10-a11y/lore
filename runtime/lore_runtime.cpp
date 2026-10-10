@@ -134,6 +134,17 @@ ColorRGBA resolve_color(const std::string& color_spec) {
     return {1.0f, 1.0f, 1.0f, 1.0f};
 }
 
+ColorRGBA get_root_background_color() {
+    auto& s = RuntimeState::instance();
+    if (!s.root_handle.empty()) {
+        auto it = s.elements.find(s.root_handle);
+        if (it != s.elements.end() && !it->second.color_spec.empty()) {
+            return resolve_color(it->second.color_spec);
+        }
+    }
+    return resolve_color("CS:blue");
+}
+
 void declare_state_int(const std::string& name, int64_t initial_value) {
     RuntimeState::instance().state_ints[name] = initial_value;
 }

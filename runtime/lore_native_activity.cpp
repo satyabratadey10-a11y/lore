@@ -80,8 +80,8 @@ static void engine_draw_frame(struct Engine* engine) {
         return;
     }
 
-    // Default clear color: blue #4287f5 (r: 0.258, g: 0.529, b: 0.960)
-    auto bg_color = lore::resolve_color("CS:blue");
+    // Clear color from root element (defaults to CS:blue)
+    auto bg_color = lore::get_root_background_color();
     glClearColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

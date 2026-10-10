@@ -49,27 +49,55 @@ jobs:
           echo "Using android.jar: $PLATFORM_JAR"
           echo "android_jar=$PLATFORM_JAR" >> $GITHUB_OUTPUT
 
-      - name: Build arm64-v8a NativeActivity shared library
+      - name: Compile and Package Hello Blue Screen APK (M4)
         run: |
-          cmake -B build-android-arm64 -G Ninja \
+          mkdir -p dist-hello
+          ./build-host/lore build examples/hello.lore --target so --out dist-hello
+          cmake -B build-android-arm64-hello -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="${{ steps.android-env.outputs.ndk_dir }}/build/cmake/android.toolchain.cmake" \
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_PLATFORM=android-26 \
-            -DCMAKE_BUILD_TYPE=Release
-          cmake --build build-android-arm64 --target app
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLORE_GENERATED_CPP="$PWD/dist-hello/app_generated.cpp"
+          cmake --build build-android-arm64-hello --target app
 
-      - name: Package Counter Debug APK
-        run: |
           mkdir -p dist
+          python3 android/package_apk.py \
+            --package-name "com.axilo.hello" \
+            --package-label "Hello LORE" \
+            --lib-name "app" \
+            --so build-android-arm64-hello/libapp.so \
+            --abi arm64-v8a \
+            --out dist/hello-debug.apk \
+            --sdk-root "$ANDROID_HOME"
+
+      - name: Compile and Package Counter APK (M8)
+        run: |
+          mkdir -p dist-counter
+          ./build-host/lore build examples/counter.lore --target so --out dist-counter
+          cmake -B build-android-arm64-counter -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="${{ steps.android-env.outputs.ndk_dir }}/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-26 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLORE_GENERATED_CPP="$PWD/dist-counter/app_generated.cpp"
+          cmake --build build-android-arm64-counter --target app
+
           python3 android/package_apk.py \
             --package-name "com.axilo.counter" \
             --package-label "Counter" \
             --lib-name "app" \
-            --so build-android-arm64/libapp.so \
+            --so build-android-arm64-counter/libapp.so \
             --abi arm64-v8a \
             --assets examples/assets \
             --out dist/counter-debug.apk \
             --sdk-root "$ANDROID_HOME"
+
+      - name: Upload Hello Blue Screen APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hello-debug-apk
+          path: dist/hello-debug.apk
 
       - name: Upload Counter Debug APK
         uses: actions/upload-artifact@v4

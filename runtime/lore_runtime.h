@@ -109,6 +109,7 @@ void set_perm_output_display(bool enabled);
 // HCCS (Colour Shortcuts)
 void register_color(const std::string& name, const std::string& hex_code);
 ColorRGBA resolve_color(const std::string& color_spec);
+ColorRGBA get_root_background_color();
 
 // State management
 void declare_state_int(const std::string& name, int64_t initial_value);

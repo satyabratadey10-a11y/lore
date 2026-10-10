@@ -27,11 +27,15 @@ target_link_libraries(lore PRIVATE lore_compiler_lib)
 # -----------------------------------------------------------------------------
 if(DEFINED CMAKE_ANDROID_NDK OR DEFINED ANDROID_NDK OR DEFINED ANDROID_ABI)
     message(STATUS "Configuring for Android NDK target (ABI: ${ANDROID_ABI})")
-    add_library(app SHARED
+    set(ANDROID_APP_SOURCES
         runtime/lore_runtime.cpp
         runtime/lore_native_activity.cpp
         runtime/native_app_glue/android_native_app_glue.c
     )
+    if(DEFINED LORE_GENERATED_CPP AND EXISTS "${LORE_GENERATED_CPP}")
+        list(APPEND ANDROID_APP_SOURCES "${LORE_GENERATED_CPP}")
+    endif()
+    add_library(app SHARED ${ANDROID_APP_SOURCES})
     target_compile_definitions(app PRIVATE LORE_TARGET_ANDROID=1)
     target_include_directories(app PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/runtime
@@ -47,9 +51,13 @@ if(DEFINED CMAKE_ANDROID_NDK OR DEFINED ANDROID_NDK OR DEFINED ANDROID_ABI)
 else()
     # Host embeddable library (.so)
     message(STATUS "Configuring for Host target (.so C ABI)")
-    add_library(app SHARED
+    set(HOST_APP_SOURCES
         runtime/lore_runtime.cpp
     )
+    if(DEFINED LORE_GENERATED_CPP AND EXISTS "${LORE_GENERATED_CPP}")
+        list(APPEND HOST_APP_SOURCES "${LORE_GENERATED_CPP}")
+    endif()
+    add_library(app SHARED ${HOST_APP_SOURCES})
     target_include_directories(app PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/runtime
         ${CMAKE_CURRENT_SOURCE_DIR}/third_party
