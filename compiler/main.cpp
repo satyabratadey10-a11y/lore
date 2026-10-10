@@ -1,9 +1,31 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <cstdlib>
 
+#include "source_pos.h"
+#include "token.h"
+#include "lexer.h"
+#include "ast.h"
+#include "parser.h"
+
 #define LORE_VERSION "0.1.0"
+
+namespace lore {
+
+std::string read_file_to_string(const std::string& path) {
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Could not open file: " + path);
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
+
+} // namespace lore
 
 void print_version() {
     std::cout << "lore version " << LORE_VERSION << " (C++17)" << std::endl;
@@ -12,10 +34,10 @@ void print_version() {
 void print_usage(const char* prog) {
     std::cout << "Usage: " << prog << " <command> [options]\n\n"
               << "Commands:\n"
-              << "  build <source.lore> --target <android-apk|so> --out <dir>\n"
-              << "      Compile a LORE source file to an Android APK or host shared library\n"
               << "  check <source.lore> [--dump-ast]\n"
               << "      Parse and validate a LORE file without generating output\n"
+              << "  build <source.lore> --target <android-apk|so> --out <dir>\n"
+              << "      Compile a LORE source file to an Android APK or host shared library\n"
               << "  --version, -v\n"
               << "      Display LORE compiler version\n"
               << "  --help, -h\n"
@@ -46,10 +68,34 @@ int main(int argc, char** argv) {
             return 1;
         }
         std::string input_file = argv[2];
-        std::cout << "[LORE] Checking syntax and semantics for: " << input_file << std::endl;
-        // In M0, placeholder check:
-        std::cout << "[LORE] Syntax check passed (M0 scaffold).\n";
-        return 0;
+        bool dump_ast_flag = false;
+        for (int i = 3; i < argc; ++i) {
+            if (std::string(argv[i]) == "--dump-ast") {
+                dump_ast_flag = true;
+            }
+        }
+
+        try {
+            std::string source = lore::read_file_to_string(input_file);
+            lore::Lexer lexer(input_file, source);
+            auto tokens = lexer.tokenize();
+
+            lore::Parser parser(input_file, tokens);
+            auto ast = parser.parse_program();
+
+            if (dump_ast_flag && ast) {
+                ast->dump(std::cout);
+            }
+
+            std::cout << "[LORE] Syntax check passed: " << input_file << "\n";
+            return 0;
+        } catch (const lore::CompileError& e) {
+            std::cerr << "Error at " << e.what() << "\n";
+            return 1;
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << "\n";
+            return 1;
+        }
     }
 
     if (command == "build") {
@@ -70,8 +116,23 @@ int main(int argc, char** argv) {
             }
         }
 
-        std::cout << "[LORE] Compiling " << input_file << " -> target: " << target << " (out: " << out_dir << ")\n";
-        return 0;
+        try {
+            std::string source = lore::read_file_to_string(input_file);
+            lore::Lexer lexer(input_file, source);
+            auto tokens = lexer.tokenize();
+
+            lore::Parser parser(input_file, tokens);
+            auto ast = parser.parse_program();
+
+            std::cout << "[LORE] Compiling " << input_file << " -> target: " << target << " (out: " << out_dir << ")\n";
+            return 0;
+        } catch (const lore::CompileError& e) {
+            std::cerr << "Error at " << e.what() << "\n";
+            return 1;
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << "\n";
+            return 1;
+        }
     }
 
     std::cerr << "Error: Unknown command '" << command << "'. Run with --help for usage.\n";

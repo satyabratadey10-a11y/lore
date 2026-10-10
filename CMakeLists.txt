@@ -11,13 +11,16 @@ include_directories(
 )
 
 # -----------------------------------------------------------------------------
-# Compiler Executable
+# Compiler Library and Executable
 # -----------------------------------------------------------------------------
-file(GLOB COMPILER_SOURCES "compiler/*.cpp")
-if(COMPILER_SOURCES)
-    add_executable(lore ${COMPILER_SOURCES})
-    target_include_directories(lore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/compiler)
-endif()
+file(GLOB COMPILER_LIB_SOURCES "compiler/*.cpp")
+list(FILTER COMPILER_LIB_SOURCES EXCLUDE REGEX ".*/main\\.cpp$")
+
+add_library(lore_compiler_lib STATIC ${COMPILER_LIB_SOURCES})
+target_include_directories(lore_compiler_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/compiler)
+
+add_executable(lore compiler/main.cpp)
+target_link_libraries(lore PRIVATE lore_compiler_lib)
 
 # -----------------------------------------------------------------------------
 # Runtime Shared Library (Host or Android NDK)
@@ -65,5 +68,6 @@ if(TEST_SOURCES)
         ${CMAKE_CURRENT_SOURCE_DIR}/compiler
         ${CMAKE_CURRENT_SOURCE_DIR}/runtime
     )
+    target_link_libraries(lore_tests PRIVATE lore_compiler_lib)
     add_test(NAME lore_tests COMMAND lore_tests)
 endif()
