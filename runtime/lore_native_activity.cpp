@@ -1,4 +1,5 @@
 #include "lore_runtime.h"
+#include "lore_renderer.h"
 
 #if defined(LORE_TARGET_ANDROID)
 
@@ -72,6 +73,7 @@ static int engine_init_display(struct Engine* engine) {
 
     glViewport(0, 0, w, h);
     LOGI("OpenGL ES 3.0 initialized (%dx%d)", w, h);
+    lore::Renderer::instance().init_graphics(w, h, 2.5f);
     return 0;
 }
 
@@ -80,12 +82,7 @@ static void engine_draw_frame(struct Engine* engine) {
         return;
     }
 
-    // Clear color from root element (defaults to CS:blue)
-    auto bg_color = lore::get_root_background_color();
-    glClearColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Call lore_render
+    lore::Renderer::instance().render_frame();
     lore_render(nullptr);
 
     eglSwapBuffers(engine->display, engine->surface);
@@ -116,8 +113,10 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
 
         if (action == AMOTION_EVENT_ACTION_DOWN) {
             LOGI("Touch down at (%.1f, %.1f)", x, y);
+            lore::Renderer::instance().on_touch_down(x, y);
         } else if (action == AMOTION_EVENT_ACTION_UP) {
             LOGI("Touch up at (%.1f, %.1f)", x, y);
+            lore::Renderer::instance().on_touch_up(x, y);
         }
         return 1;
     }

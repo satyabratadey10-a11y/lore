@@ -29,6 +29,7 @@ if(DEFINED CMAKE_ANDROID_NDK OR DEFINED ANDROID_NDK OR DEFINED ANDROID_ABI)
     message(STATUS "Configuring for Android NDK target (ABI: ${ANDROID_ABI})")
     set(ANDROID_APP_SOURCES
         runtime/lore_runtime.cpp
+        runtime/lore_renderer.cpp
         runtime/lore_native_activity.cpp
         runtime/native_app_glue/android_native_app_glue.c
     )
@@ -53,6 +54,7 @@ else()
     message(STATUS "Configuring for Host target (.so C ABI)")
     set(HOST_APP_SOURCES
         runtime/lore_runtime.cpp
+        runtime/lore_renderer.cpp
     )
     if(DEFINED LORE_GENERATED_CPP AND EXISTS "${LORE_GENERATED_CPP}")
         list(APPEND HOST_APP_SOURCES "${LORE_GENERATED_CPP}")
@@ -83,3 +85,11 @@ add_executable(test_codegen tests/test_codegen.cpp)
 target_include_directories(test_codegen PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/compiler)
 target_link_libraries(test_codegen PRIVATE lore_compiler_lib)
 add_test(NAME test_codegen COMMAND test_codegen)
+
+add_executable(test_runtime_m5 tests/test_runtime_m5.cpp)
+target_include_directories(test_runtime_m5 PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/runtime
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+)
+target_link_libraries(test_runtime_m5 PRIVATE app)
+add_test(NAME test_runtime_m5 COMMAND test_runtime_m5)

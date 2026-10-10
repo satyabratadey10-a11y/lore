@@ -197,6 +197,8 @@ std::string interpolate_string(const std::string& template_str) {
 
 void create_root(ElementKind kind, const std::string& handle) {
     auto& s = RuntimeState::instance();
+    s.elements.clear();
+    s.handlers.clear();
     s.root_handle = handle;
     UIElement el;
     el.kind = kind;
@@ -211,7 +213,10 @@ void create_element(ElementKind kind, const std::string& handle, const std::stri
     el.handle = handle;
     el.parent_handle = parent_handle;
     s.elements[handle] = el;
-    s.elements[parent_handle].child_handles.push_back(handle);
+    auto& p_children = s.elements[parent_handle].child_handles;
+    if (std::find(p_children.begin(), p_children.end(), handle) == p_children.end()) {
+        p_children.push_back(handle);
+    }
 }
 
 void set_size_fullscreen(const std::string& handle) {
@@ -268,6 +273,40 @@ void end_attributes(const std::string& handle) {
 
 void on_event(const std::string& handle, EventType event, std::function<void()> handler) {
     RuntimeState::instance().handlers[handle].emplace_back(event, handler);
+}
+
+void trigger_event(const std::string& handle, EventType event) {
+    auto& s = RuntimeState::instance();
+    auto it = s.handlers.find(handle);
+    if (it != s.handlers.end()) {
+        for (const auto& pair : it->second) {
+            if (pair.first == event) {
+                pair.second();
+            }
+        }
+    }
+}
+
+std::string get_root_handle() {
+    return RuntimeState::instance().root_handle;
+}
+
+std::vector<std::string> get_child_handles(const std::string& parent_handle) {
+    auto& s = RuntimeState::instance();
+    auto it = s.elements.find(parent_handle);
+    if (it != s.elements.end()) {
+        return it->second.child_handles;
+    }
+    return {};
+}
+
+std::string get_rendered_text(const std::string& handle) {
+    auto& s = RuntimeState::instance();
+    auto it = s.elements.find(handle);
+    if (it != s.elements.end()) {
+        return interpolate_string(it->second.text);
+    }
+    return "";
 }
 
 void show_display_at(Stage stage) {

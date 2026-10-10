@@ -139,6 +139,12 @@ void end_attributes(const std::string& handle);
 
 // Events
 void on_event(const std::string& handle, EventType event, std::function<void()> handler);
+void trigger_event(const std::string& handle, EventType event);
+
+// Element queries
+std::string get_root_handle();
+std::vector<std::string> get_child_handles(const std::string& parent_handle);
+std::string get_rendered_text(const std::string& handle);
 
 // Stage & display statements
 void show_display_at(Stage stage);
