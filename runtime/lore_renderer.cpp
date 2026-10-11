@@ -121,6 +121,7 @@ std::string Renderer::hit_test(float x, float y) const {
 }
 
 void Renderer::on_touch_down(float x, float y) {
+    if (!is_display_active()) return;
     std::string handle = hit_test(x, y);
     if (!handle.empty()) {
         pressed_handle_ = handle;
@@ -131,6 +132,7 @@ void Renderer::on_touch_down(float x, float y) {
 }
 
 void Renderer::on_touch_up(float x, float y) {
+    if (!is_display_active()) return;
     if (!pressed_handle_.empty()) {
         std::string hit = hit_test(x, y);
         set_element_pressed(pressed_handle_, false);
@@ -144,6 +146,9 @@ void Renderer::on_touch_up(float x, float y) {
 }
 
 void Renderer::render_frame() {
+    if (!is_display_active()) {
+        return;
+    }
 #if defined(LORE_TARGET_ANDROID)
     auto bg_color = get_root_background_color();
     glClearColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a);

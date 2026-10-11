@@ -61,7 +61,9 @@ public:
     std::unordered_map<std::string, std::vector<std::pair<EventType, std::function<void()>>>> handlers;
 
     Stage current_stage = Stage::INPUT;
-    bool display_visible = true;
+    bool show_display_stages[3] = {false, false, false};
+    bool has_explicit_stage = false;
+    bool display_hidden = false;
 
     void reset() {
         package = PackageInfo{};
@@ -73,7 +75,11 @@ public:
         root_handle.clear();
         handlers.clear();
         current_stage = Stage::INPUT;
-        display_visible = true;
+        show_display_stages[0] = false;
+        show_display_stages[1] = false;
+        show_display_stages[2] = false;
+        has_explicit_stage = false;
+        display_hidden = false;
     }
 };
 
@@ -352,14 +358,51 @@ ColorRGBA get_element_image_tint(const std::string& handle) {
     return {1.0f, 1.0f, 1.0f, 1.0f};
 }
 
+void reset_runtime() {
+    RuntimeState::instance().reset();
+}
+
 void show_display_at(Stage stage) {
     auto& s = RuntimeState::instance();
-    s.current_stage = stage;
-    s.display_visible = true;
+    s.show_display_stages[static_cast<int>(stage)] = true;
+    s.has_explicit_stage = true;
+    s.display_hidden = false;
 }
 
 void hide_display() {
-    RuntimeState::instance().display_visible = false;
+    RuntimeState::instance().display_hidden = true;
+}
+
+bool is_display_active() {
+    auto& s = RuntimeState::instance();
+    if (!s.permissions.show_display && !s.permissions.output_display) {
+        return false;
+    }
+    if (s.display_hidden) {
+        return false;
+    }
+    if (s.permissions.show_display) {
+        return true;
+    }
+    if (s.permissions.output_display) {
+        if (s.has_explicit_stage) {
+            return s.show_display_stages[static_cast<int>(s.current_stage)];
+        }
+        return false;
+    }
+    return false;
+}
+
+Stage get_current_stage() {
+    return RuntimeState::instance().current_stage;
+}
+
+void set_stage(Stage stage) {
+    RuntimeState::instance().current_stage = stage;
+}
+
+bool is_input_harness_active() {
+    return RuntimeState::instance().permissions.input_harness;
 }
 
 // Default fallback hook if not linked with user program
@@ -381,16 +424,16 @@ void lore_init(const char* config) {
 
 void lore_input(const void* signal) {
     std::cout << "[LORE ABI] lore_input called\n";
+    lore::trigger_event(lore::get_root_handle(), lore::EventType::INPUT);
 }
 
 void lore_stage(int stage) {
     std::cout << "[LORE ABI] lore_stage: " << stage << "\n";
-    lore::RuntimeState::instance().current_stage = static_cast<lore::Stage>(stage);
+    lore::set_stage(static_cast<lore::Stage>(stage));
 }
 
 void lore_render(void* surface) {
-    auto& s = lore::RuntimeState::instance();
-    if (!s.display_visible && !s.permissions.show_display) {
+    if (!lore::is_display_active()) {
         return;
     }
     // Rendering occurs here or via OpenGL in NativeActivity

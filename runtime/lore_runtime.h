@@ -154,6 +154,11 @@ bool is_element_pressed(const std::string& handle);
 // Stage & display statements
 void show_display_at(Stage stage);
 void hide_display();
+bool is_display_active();
+Stage get_current_stage();
+void set_stage(Stage stage);
+bool is_input_harness_active();
+void reset_runtime();
 
 // Setup hook implemented by user-generated LORE program
 extern "C" void lore_user_program_setup();
