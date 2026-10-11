@@ -1,0 +1,33 @@
+package:name : "com.axilo.stagedemo".
+package:id : "stagedemo1".
+package:label : "Stage Demo".
+
+import [ UI ].
+
+permission
+  InputHarness : true and eachtimevalue : 1.
+  OutputDisplay : true.
+EndOfPermission.
+
+HCCS
+  "#111827" is "dark".
+  "#10b981" is "green".
+  "#ffffff" is "white".
+EndOfHCCS.
+
+/// ---------- Background ----------
+root is bg.
+bg size is fullscreen.
+bg colour is CS:dark.
+.endbgatt.
+
+/// ---------- Stage Text ----------
+put text status inside bg.
+status text is "Execution Completed. Output Stage Active.".
+status colour is CS:green.
+status size is 24sp.
+status align is center.
+.endstatusatt.
+
+/// ---------- Stage statement ----------
+show display at output.

@@ -84,4 +84,4 @@ LORE is a controlled English-like programming language tailored for native UI an
 - [x] **M5 Text + Button + State**: {count} interpolation, tap handling, redraw loop.
 - [x] **M6 Images**: Texture loading, pressed/disabled states, fit modes, tints.
 - [x] **M7 Permissions + Stages**: ShowDisplay, OutputDisplay, InputHarness, stage statements.
-- [ ] **M8 Demo App**: Finished counter demo + stage demo, release artifacts, instructions.
+- [x] **M8 Demo App**: Finished counter demo + stage demo, release artifacts, instructions.
